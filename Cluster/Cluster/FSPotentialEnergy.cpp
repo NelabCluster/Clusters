@@ -26,6 +26,7 @@ double FSPotentialEnergy::EnergyValue(Clusters& cluster)
 	d = 3.569745;A = 1.828905;beta = 1.8;c = 3.40;c0 = 1.2371147;c1 = -0.3592185; c2 = -0.0385607;
 
 	N = cluster.GetAtomsNumber();
+	vector<double> EofAtom(N,0);
 	VEN = (double *)calloc(N,sizeof(double));
 	PEN = (double *)calloc(N,sizeof(double));
 	R = cluster.GetDistancePointer();
@@ -48,9 +49,12 @@ double FSPotentialEnergy::EnergyValue(Clusters& cluster)
 
 	for(i=0 ;i < N; i++){
 		PEN[i] = sqrt(PEN[i]);
-		E += VEN[i] - A * PEN[i];
+		double temp = VEN[i] - A * PEN[i];
+		EofAtom[i] = temp;
+		E += temp;
 	}
 
+	cluster.SetEnergyVectorOfAtoms( EofAtom );
 	cluster.SetEnergy(E);
 
 	free(VEN);
@@ -67,17 +71,18 @@ double FSPotentialEnergy::ForceValue(Clusters& cluster)
 	double *PEN;
 	double maxF = 0,FK;
 	double minR = 1.6,tempPmin;
-	double *FX,*FY,*FZ;
+	vector<double> FX,FY,FZ;
 	int N;
 	double *R;
+
 
 	N = cluster.GetAtomsNumber();
 	PEN = (double *)calloc(N,sizeof(double));
 	R = cluster.GetDistancePointer();
 
-	FX = (double *)calloc(N,sizeof(double)); memset(FX,0,N * sizeof(double));
-	FY = (double *)calloc(N,sizeof(double)); memset(FY,0,N * sizeof(double));
-	FZ = (double *)calloc(N,sizeof(double)); memset(FY,0,N * sizeof(double));
+	FX.resize(N,0); 
+	FY.resize(N,0);
+	FZ.resize(N,0); 
 
 	//Fe
 	d = 3.569745;A = 1.828905;beta = 1.8;c = 3.40;c0 = 1.2371147;c1 = -0.3592185; c2 = -0.0385607;
@@ -109,7 +114,7 @@ double FSPotentialEnergy::ForceValue(Clusters& cluster)
 
 			tempdP = (PEN[i] + PEN[j]) * tempdP;
 
-			FK = -tempdV / 2 + A * tempdP;
+			FK = -(-tempdV / 2 + A * tempdP);
 
 			AtomPos atomOfIPos = cluster.GetAtomAtIndex(i).GetPos();
 			AtomPos atomOfJPos = cluster.GetAtomAtIndex(j).GetPos();
@@ -128,6 +133,9 @@ double FSPotentialEnergy::ForceValue(Clusters& cluster)
 		maxF = (FY[i]>maxF)?FY[i]:maxF;
 		maxF = (FZ[i]>maxF)?FZ[i]:maxF;
 	}
+
+	cluster.SetForceOfCluster( maxF );
+	cluster.SetForceXYZVectorOfAtoms( FX, FY, FZ );
 
 	free(PEN);
 	return maxF;

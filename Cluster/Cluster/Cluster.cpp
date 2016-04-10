@@ -370,6 +370,68 @@ void MutateNumberExperiment()
 	}
 }
 
+void LJInit()
+{
+	int N = 40;
+	Clusters LJ(N,ATOM_None);
+	//LJ.SetPosOfAtomIndex( 0, AtomPos(0.4391356726,0.1106588251,-0.4635601962) );
+	//LJ.SetPosOfAtomIndex( 1, AtomPos(-0.5185079933,0.3850176090,0.0537084789) );
+	//LJ.SetPosOfAtomIndex( 2, AtomPos(0.0793723207,-0.4956764341,0.4098517173) );
+	PotentialEnergy *pe = PotentialEnergy::initWithType(PE_LJ);
+	double r0 = 1.122461797;
+	int num = 5000;
+	ofstream randFile("randcon-40.txt"), randconLocalFile("randcon-local-40.txt");
+	while(num--)
+	{
+		double radius = r0 * pow( N * 1.0, 1.0 / 3 );
+		//InitTool::RandInCubic( LJ, radius );
+		InitTool::RandInCubicWithDisCon( LJ, radius );
+		double E = pe->EnergyValue( LJ );
+		//double F = pe->ForceValue( LJ );
+		double EE = LocalTool::LocalMinimizeClusters( LJ, PE_LJ );
+		
+		cout<<E<<endl;
+		//cout<<F<<endl;
+		cout<<EE<<endl;
+
+		randFile<<E<<endl;
+		randconLocalFile<<EE<<endl;
+	}
+	randFile.close();randconLocalFile.close();
+
+	delete(pe);
+}
+
+void FeInit()
+{
+	int N = 20;
+	Clusters Fe(N,ATOM_Fe);
+	//Fe.SetPosOfAtomIndex(0,AtomPos(0,-0,0.9774326541));
+	//Fe.SetPosOfAtomIndex(1,AtomPos(-2.5860642987,-2.0665934996,1.9436820849));
+	//Fe.SetPosOfAtomIndex(2,AtomPos(-3.9266247496,-0.1879185203,1.0421907813));
+
+	PotentialEnergy *pe = PotentialEnergy::initWithType(PE_FS);
+	double r0 = AtomPara::NearestNeighborSeparation(ATOM_Fe);
+	int num = 5000;
+	ofstream randFile("Fe-rand-20.txt"), randconLocalFile("Fe-rand-local-20.txt");
+	while(num--)
+	{
+		double radius = r0 * pow( N * 1.0, 1.0 / 3 );
+		InitTool::RandInCubic( Fe, radius );
+
+		double E = pe->EnergyValue( Fe );
+		double EE = LocalTool::LocalMinimizeClusters( Fe, PE_FS );
+
+		cout<<E<<endl;
+		cout<<EE<<endl;
+
+		randFile<<E<<endl;
+		randconLocalFile<<EE<<endl;
+	}
+	randFile.close();randconLocalFile.close();
+	delete pe;
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	srand((unsigned)time(NULL));
@@ -383,19 +445,24 @@ int _tmain(int argc, _TCHAR* argv[])
 		//TestFingerprint();
 	#pragma endregion ²âÊÔº¯Êý
 
-	srand((unsigned)time(NULL));
+	#pragma region BCGA
+		//PreExperiment();
 
-	PreExperiment();
+		//PopsizeExperiment();
+		//InitTypeExperiment();
 
-	//PopsizeExperiment();
-	//InitTypeExperiment();
+		//MatRateExperiment();
+		//MateTypeExperiment();
 
-	//MatRateExperiment();
-	//MateTypeExperiment();
+		//MutateTypeExperiment();
+		//MutateRateExperiment();
+		//MutateNumberExperiment();
+	#pragma endregion BCGA
 
-	//MutateTypeExperiment();
-	//MutateRateExperiment();
-	//MutateNumberExperiment();
+	#pragma region multi population
+		//LJInit();
+	FeInit();
+	#pragma endregion multi population
 
 	system("pause");
 	return 0;

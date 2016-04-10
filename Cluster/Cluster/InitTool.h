@@ -12,5 +12,7 @@ public:
 	
 	static void AtomTypeSwap( Clusters &cluster, Clusters &neighCluster, PE_TYPE type  ); 
 	static void RandType( Clusters &cluster );
+
+	static void RandInCubicWithDisCon( Clusters& cluster, double length );
 };
 

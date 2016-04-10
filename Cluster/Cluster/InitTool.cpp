@@ -117,3 +117,56 @@ void InitTool::AtomTypeSwap( Clusters &cluster, Clusters &neighCluster, PE_TYPE 
 		}
 	}
 }
+
+void InitTool::RandInCubicWithDisCon( Clusters& cluster, double length )
+{
+	int N = cluster.GetAtomsNumber();
+	double r0 = AtomPara::NearestNeighborSeparation( cluster.GetAlloy() );
+	double rmin = r0 * 0.8, rmax = r0 * 1.6;
+	for ( int i = 0; i < N; i++ )
+	{
+		while ( 1 )
+		{
+			double x = (RANDI-0.5) * length;
+			double y = (RANDI-0.5) * length;
+			double z = (RANDI-0.5) * length;
+			AtomPos pos( x, y, z);
+
+			bool satify = true;
+			/*for ( int j = 0; j < i; j ++ )
+			{
+			AtomPos posOfj = cluster.GetAtomAtIndex(j).GetPos();
+			double rij = sqrt( (pos.x-posOfj.x) * (pos.x-posOfj.x) + (pos.y-posOfj.y) * (pos.y-posOfj.y) + (pos.z-posOfj.z) * (pos.z-posOfj.z) );
+			if ( rij < rmin)
+			{
+			satify = false;
+			break;
+			}
+			}
+
+			if ( !satify )
+			continue;*/
+
+			satify = false;
+			for ( int j = 0; j < i; j ++ )
+			{
+				AtomPos posOfj = cluster.GetAtomAtIndex(j).GetPos();
+				double rij = sqrt( (pos.x-posOfj.x) * (pos.x-posOfj.x) + (pos.y-posOfj.y) * (pos.y-posOfj.y) + (pos.z-posOfj.z) * (pos.z-posOfj.z) );
+				if ( rij < rmax )
+				{
+					satify = true;
+					break;
+				}
+			}
+
+			if ( i == 0 )
+				satify = true;
+
+			if ( satify ){
+				cluster.SetPosOfAtomIndex(i,pos);
+				break;
+			}
+
+		}
+	}
+}

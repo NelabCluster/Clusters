@@ -12,6 +12,8 @@ AtomPara AtomPara::AtomParaWithType(ATOM_TYPE type)
 {
 	switch (type)
 	{
+		case ATOM_None: return AtomPara(1.122461797);
+		case ATOM_Fe: return AtomPara(2.485493);
 		case ATOM_Cu : return AtomPara(2.556);
 		case ATOM_Au : return AtomPara(2.884);
 		break;
